@@ -1,3 +1,17 @@
+/*
+	Data Analyst Bike Stores
+    SQL Author: Melissa Meléndez
+    LinkedIn: https://www.linkedin.com/in/melissamelendezrojano/
+    
+    Dataset Creator: SQLServerTutorial.Net (https://www.sqlservertutorial.net/getting-started/sql-server-sample-database/)
+    Original Dataset Location: https://www.sqlservertutorial.net/getting-started/load-sample-database/
+    Dataset .csv Location: https://www.kaggle.com/datasets/dillonmyrick/bike-store-sample-database
+        
+    File name: basic_company_info_bikestores.sql
+    Description: The aim of this analysis is obtain an overview about the company, 
+		doing queries by each table without doing relationships between tables.
+*/
+
 -- 1. Information about stores:
 -- How many stores does the company have and where are they located?
 SELECT store_id, store_name, city, state 
