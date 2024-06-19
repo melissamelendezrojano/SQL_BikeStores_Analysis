@@ -8,7 +8,9 @@
     Dataset .csv Location: https://www.kaggle.com/datasets/dillonmyrick/bike-store-sample-database
         
     File name: build_tables_bikestores.sql
-    Description: This script will create the database, tables and table relationships for this project. The original script is based on SQLServer, for this reason I made modifications to this script and updated it to work with MySQL. Due to the volumen of data, I took the attributes from kaggle and imported the data through MySQL Workbench.
+    Description: This script will create the database, tables and table relationships for this project. 
+		The original script is based on SQLServer, for this reason I made modifications to this script and updated it to work with MySQL. 
+		Due to the volumen of data, I took the attributes from kaggle and imported the data through MySQL Workbench.
 */
 
 -- Drop database if exists
