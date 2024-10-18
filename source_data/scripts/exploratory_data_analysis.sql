@@ -16,6 +16,18 @@
 -- 1. Information about stores
 -- How many stores does the company have and where are they located?
 
+SELECT
+	COUNT(*) AS num_stores
+FROM
+	stores;
+
+/*
+|num_stores|
+|----------|
+|3         |
+
+*/
+
 SELECT 
 	store_name,
     street,
@@ -110,28 +122,6 @@ FROM
 */
 
 -- How many products belong to each brand?
-SELECT 
-	brand_id,
-    COUNT(product_name) AS num_products_by_brand    
-FROM
-	products
-GROUP BY
-	brand_id;
-    
-/*
-|brand_id|num_products_by_brand|
-|--------|---------------------|
-|1       |118                  |
-|2       |10                   |
-|3       |3                    |
-|4       |3                    |
-|5       |1                    |
-|6       |3                    |
-|7       |23                   |
-|8       |25                   |
-|9       |135                  |
-
-*/
 
 SELECT 
 	products.brand_id,
@@ -157,5 +147,78 @@ ORDER BY num_products_by_brand DESC;
 |4       |Pure Cycles |3                    |
 |6       |Strider     |3                    |
 |5       |Ritchey     |1                    |
+
+*/
+
+/* PENDING
+
+-- What is the best-selling product per store?
+WITH MaxQuantityPerStore AS (
+	SELECT
+		stores.store_id,
+        MAX(order_items.quantity) AS max_quantity
+    FROM
+        orders
+    LEFT JOIN order_items
+        ON orders.order_id = order_items.order_id
+    LEFT JOIN stores
+        ON orders.store_id = stores.store_id
+    WHERE 
+        orders.order_status = 4
+    GROUP BY
+        stores.store_name
+)
+SELECT
+    products.product_name,
+    stores.store_name,
+    order_items.quantity
+FROM
+    MaxQuantityPerStore
+JOIN orders
+    ON orders.store_id = MaxQuantityPerStore.store_id
+JOIN order_items
+    ON orders.order_id = order_items.order_id
+JOIN products
+    ON order_items.product_id = products.product_id
+JOIN stores
+    ON orders.store_id = stores.store_id
+WHERE
+    order_items.quantity = MaxQuantityPerStore.max_quantity
+    AND orders.order_status = 4
+ORDER BY
+    stores.store_name;
+*/
+
+
+-- 3. Sales analysis
+-- How many orders have the company made? and Which stores have the highest orders?
+
+SELECT 
+	COUNT(*) AS num_orders
+FROM
+	orders;
+/*
+|num_orders|
+|----------|
+|1615      |
+*/
+
+SELECT 
+    stores.store_name,
+    COUNT(orders.order_id) AS num_orders
+FROM
+	stores
+LEFT JOIN orders
+	ON stores.store_id = orders.store_id
+GROUP BY
+	stores.store_name
+ORDER BY num_orders DESC;
+
+/*
+|store_name      |num_orders|
+|----------------|----------|
+|Baldwin Bikes   |1093      |
+|Santa Cruz Bikes|348       |
+|Rowlett Bikes   |174       |
 
 */
