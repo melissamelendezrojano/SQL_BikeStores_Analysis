@@ -9,7 +9,7 @@
         
     File name: build_tables_bikestores.sql
     Description: This script will create the database, tables and table relationships for this project. 
-		The original script is based on SQLServer, for this reason I made modifications to this script and updated it to work with MySQL. 
+		The original script is based on SQLServer, for this reason I made modifications to this script and updated it to work with PostgreSQL. 
 		Due to the volumen of data, I took the attributes from kaggle and imported the data through MySQL Workbench.
 */
 
