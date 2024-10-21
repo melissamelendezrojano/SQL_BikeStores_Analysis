@@ -150,43 +150,44 @@ ORDER BY num_products_by_brand DESC;
 
 */
 
-/* PENDING
-
 -- What is the best-selling product per store?
-WITH MaxQuantityPerStore AS (
+WITH RankQuantityPerStore AS (
 	SELECT
-		stores.store_id,
-        MAX(order_items.quantity) AS max_quantity
-    FROM
-        orders
-    LEFT JOIN order_items
-        ON orders.order_id = order_items.order_id
-    LEFT JOIN stores
-        ON orders.store_id = stores.store_id
-    WHERE 
-        orders.order_status = 4
-    GROUP BY
-        stores.store_name
-)
-SELECT
-    products.product_name,
+	products.product_name,
+    category_name,
     stores.store_name,
-    order_items.quantity
-FROM
-    MaxQuantityPerStore
-JOIN orders
-    ON orders.store_id = MaxQuantityPerStore.store_id
-JOIN order_items
-    ON orders.order_id = order_items.order_id
-JOIN products
-    ON order_items.product_id = products.product_id
-JOIN stores
-    ON orders.store_id = stores.store_id
-WHERE
-    order_items.quantity = MaxQuantityPerStore.max_quantity
-    AND orders.order_status = 4
-ORDER BY
-    stores.store_name;
+    order_items.quantity,
+    orders.order_status,
+    ROW_NUMBER() OVER(PARTITION BY stores.store_name
+						ORDER BY order_items.quantity DESC) AS quantity_rank
+	FROM
+		stores
+	LEFT JOIN orders
+		ON stores.store_id = orders.store_id
+	LEFT JOIN order_items
+		ON orders.order_id = order_items.order_id
+	LEFT JOIN products
+		ON order_items.product_id = products.product_id
+	LEFT JOIN categories
+		ON products.category_id = categories.category_id
+	WHERE orders.order_status = 4
+	ORDER BY order_items.quantity
+)
+
+SELECT *
+FROM RankQuantityPerStore
+WHERE quantity_rank = 1;
+
+
+
+
+/* 
+|product_name                         |category_name      |store_name      |quantity|order_status|quantity_rank|
+|-------------------------------------|-------------------|----------------|--------|------------|-------------|
+|Pure Cycles Vine 8-Speed - 2016      |Cruisers Bicycles  |Baldwin Bikes   |2       |4           |1            |
+|Surly Straggler 650b - 2016          |Cyclocross Bicycles|Rowlett Bikes   |2       |4           |1            |
+|Trek Remedy 29 Carbon Frameset - 2016|Mountain Bikes     |Santa Cruz Bikes|2       |4           |1            |
+
 */
 
 
