@@ -20,10 +20,12 @@
 -- •	Which stores have the highest total sales?
 
 -- TOTAL SALES PER STORE
+
 SELECT
 	orders.store_id,
     stores.store_name,
-    ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS total_sales
+    ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS total_sales,
+    ROW_NUMBER() OVER(ORDER BY ROUND(SUM(quantity * list_price * (1 - discount)), 2) DESC) AS sales_rank
 FROM
 	order_items
 LEFT JOIN orders
@@ -50,7 +52,9 @@ SELECT
 	EXTRACT(YEAR FROM order_date) AS year,
     orders.store_id,
     stores.store_name,
-    ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS total_sales
+    ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS total_sales,
+    ROW_NUMBER() OVER(PARTITION BY EXTRACT(YEAR FROM order_date)
+						ORDER BY ROUND(SUM(quantity * list_price * (1 - discount)), 2) DESC) AS sales_rank
 FROM
 	order_items
 LEFT JOIN orders
@@ -75,6 +79,7 @@ ORDER BY year, total_sales DESC;
 |2018|1       |Santa Cruz Bikes|166635.51  |
 |2018|3       |Rowlett Bikes   |94033.30   |
 */
+
 
 
 -- •	What is the best-selling product in each store?
@@ -200,7 +205,58 @@ ORDER BY AVG_purchase_ticket DESC;
 |Santa Cruz Bikes|1534.83            |
 */
 	
+-- ***************************************************************
+
+SELECT
+    store_name,
+    ROUND(AVG(amount), 2) AS AVG_purchase_ticket
+FROM (
+	SELECT
+		orders.order_id,
+		orders.order_status,
+		order_items.item_id,
+		order_items.product_id,
+		stores.store_name,
+		(quantity * list_price * (1 - discount)) AS amount  
+	FROM
+		orders
+	LEFT JOIN order_items
+		ON orders.order_id = order_items.order_id
+	LEFT JOIN stores
+		ON orders.store_id = stores.store_id
+	WHERE order_status = 4
+) AS AmountProduct
+GROUP BY store_name
+ORDER BY AVG_purchase_ticket DESC;
 
 
--- •	Which stores show the highest month-over-month sales growth?
+
+-- •	Which stores show the highest month-over-month sales growth? 
+
+WITH AmountMonthStoreYear AS (
+	SELECT
+		orders.store_id,
+		EXTRACT(YEAR FROM order_date) AS year,
+		EXTRACT(MONTH FROM order_date) AS month,
+		SUM((order_items.quantity * order_items.list_price * (1 - order_items.discount))) AS sum_amount_month
+	FROM
+		orders
+	LEFT JOIN order_items
+		ON orders.order_id = order_items.order_id
+	WHERE order_status = 4
+	GROUP BY year, month, store_id)
+SELECT
+	store_id,
+    year,
+    month,
+    sum_amount_month,
+    LAG(sum_amount_month, 1) OVER 
+		(PARTITION BY store_id
+         ORDER BY year, month ) AS last_amount_month,
+	ROUND(((sum_amount_month - LAG(sum_amount_month, 1) OVER (PARTITION BY store_id ORDER BY year, month))/LAG(sum_amount_month, 1) OVER (PARTITION BY store_id ORDER BY year, month)), 2) AS MoM
+FROM
+	AmountMonthStoreYear;
+
+
+
 -- •	What percentage of total sales comes from each store?
