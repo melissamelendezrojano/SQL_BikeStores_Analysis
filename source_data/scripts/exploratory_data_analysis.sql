@@ -345,3 +345,78 @@ FROM
 
 
 -- •	What percentage of total sales comes from each store?
+
+WITH TotalSalesStore AS (
+	SELECT
+		orders.store_id,
+		stores.store_name,
+		ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS store_sales,
+		(SELECT ROUND(SUM(quantity * list_price * (1 - discount)), 2) AS sales
+		 FROM order_items
+		 LEFT JOIN orders
+			ON order_items.order_id = orders.order_id
+		 WHERE orders.order_status = 4) AS sales
+	FROM
+		order_items
+	LEFT JOIN orders
+		ON order_items.order_id = orders.order_id
+	LEFT JOIN stores
+		ON orders.store_id = stores.store_id
+	WHERE orders.order_status = 4
+	GROUP BY
+		orders.store_id, stores.store_name
+	ORDER BY store_sales DESC
+)
+SELECT
+	store_id,
+    store_name,
+    store_sales,
+    ROUND((store_sales/sales), 2) AS pct_sales
+FROM
+	TotalSalesStore;
+
+/*
+|store_id|store_name      |store_sales|pct_sales|
+|--------|----------------|-----------|---------|
+|2       |Baldwin Bikes   |4701209.57 |0.71     |
+|1       |Santa Cruz Bikes|1255491.65 |0.19     |
+|3       |Rowlett Bikes   |705914.03  |0.11     |
+*/    
+
+
+-- ***************************************************************************************************************************************************************************************
+-- Inventory and Product Analysis
+-- *************************************************************************************************************************************************************************************** 
+
+-- •	Which products have the lowest inventory relative to sales?
+
+
+
+-- ***********************(NOT COMPLETED)
+SELECT
+	stocks.store_id,
+    products.product_id,
+    products.product_name,
+    SUM(order_items.quantity) AS order_quantity,
+    stocks.quantity AS stocks_quantity
+FROM
+	orders
+LEFT JOIN order_items
+	ON order_items.order_id = orders.order_id
+LEFT JOIN products
+	ON products.product_id = order_items.product_id
+LEFT JOIN stocks
+	ON stocks.product_id = order_items.product_id
+    AND stocks.store_id = orders.store_id
+WHERE orders.order_status = 4
+GROUP BY stocks.store_id, products.product_id, products.product_name, stocks.quantity;
+
+
+
+
+
+-- •	What is the sales distribution by brand?
+-- •	Which product category generates the most revenue?
+-- •	Which products are selling the least and could be considered for discontinuation?
+-- •	On average, how many days does a product remain in inventory before being sold?
+-- •	What is the sales margin by product and category?
