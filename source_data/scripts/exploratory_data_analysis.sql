@@ -390,15 +390,14 @@ FROM
 
 -- •	Which products have the lowest inventory relative to sales?
 
-
-
--- ***********************(NOT COMPLETED)
 SELECT
 	stocks.store_id,
     products.product_id,
     products.product_name,
-    SUM(order_items.quantity) AS order_quantity,
-    stocks.quantity AS stocks_quantity
+    SUM(order_items.quantity) AS sales_quantity,
+    stocks.quantity AS inventory_quantity,
+    CASE WHEN SUM(order_items.quantity) > 0 THEN stocks.quantity/SUM(order_items.quantity)
+		 ELSE NULL END AS inventory_to_sales_ratio
 FROM
 	orders
 LEFT JOIN order_items
@@ -409,11 +408,70 @@ LEFT JOIN stocks
 	ON stocks.product_id = order_items.product_id
     AND stocks.store_id = orders.store_id
 WHERE orders.order_status = 4
-GROUP BY stocks.store_id, products.product_id, products.product_name, stocks.quantity;
+GROUP BY stocks.store_id, products.product_id, products.product_name, stocks.quantity
+ORDER BY products.product_id;
+
+/*
+
+*/
+
+-- ************************PRUEBA
+SELECT
+	orders.order_status,
+	stocks.store_id,
+    products.product_id,
+    products.product_name,
+    SUM(order_items.quantity) AS sales_quantity,
+    stocks.quantity AS inventory_quantity,
+    CASE WHEN SUM(order_items.quantity) > 0 THEN stocks.quantity/SUM(order_items.quantity)
+		 ELSE NULL END AS inventory_to_sales_ratio
+FROM
+	products
+FULL JOIN stocks
+	ON products.product_id = stocks.product_id
+FULL JOIN order_items
+	ON products.product_id = order_items.product_id
+FULL JOIN orders
+	ON order_items.order_id = orders.order_id
+WHERE orders.order_status = 4
+GROUP BY stocks.store_id, products.product_id, products.product_name, stocks.quantity
+ORDER BY products.product_id;
+
+-- **************************************************************************************************
+-- ************************CHAT GPT
+SELECT 
+    p.product_id,
+    p.product_name,
+    st.store_id,
+    COALESCE(SUM(oi.quantity), 0) AS total_sales_quantity,
+    COALESCE(st.quantity, 0) AS inventory_quantity,
+    CASE 
+        WHEN COALESCE(st.quantity, 0) = 0 THEN NULL
+        ELSE (COALESCE(st.quantity, 0) / COALESCE(SUM(oi.quantity), 1)) 
+    END AS inventory_to_sales_ratio
+FROM 
+    products p
+LEFT JOIN order_items oi ON p.product_id = oi.product_id
+LEFT JOIN orders o ON oi.order_id = o.order_id
+LEFT JOIN stocks st ON st.product_id = p.product_id AND st.store_id = o.store_id
+GROUP BY 
+    p.product_id, p.product_name, st.store_id, st.quantity
+ORDER BY 
+    inventory_to_sales_ratio ASC;
+    
 
 
 
+-- ************
+SELECT * 
+FROM stocks
+LEFT JOIN products ON stocks.product_id = products.product_id;
 
+-- ************
+SELECT * from stocks;
+
+-- ***********
+select * from order_items;
 
 -- •	What is the sales distribution by brand?
 -- •	Which product category generates the most revenue?

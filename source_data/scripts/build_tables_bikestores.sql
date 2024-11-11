@@ -1,31 +1,8 @@
-/*
-	Data Analyst Bike Stores
-    SQL Author: Melissa Meléndez
-    LinkedIn: https://www.linkedin.com/in/melissamelendezrojano/
-    
-    Dataset Creator: SQLServerTutorial.Net (https://www.sqlservertutorial.net/getting-started/sql-server-sample-database/)
-    Original Dataset Location: https://www.sqlservertutorial.net/getting-started/load-sample-database/
-    Dataset .csv Location: https://www.kaggle.com/datasets/dillonmyrick/bike-store-sample-database
-        
-    File name: build_tables_bikestores.sql
-    Description: This script will create the database, tables and table relationships for this project. 
-		The original script is based on SQLServer, for this reason I made modifications to this script and updated it to work with PostgreSQL. 
-		Due to the volumen of data, I took the attributes from kaggle and imported the data through MySQL Workbench.
-*/
-
--- Drop database if exists
-DROP DATABASE IF EXISTS bike_stores;
-
--- Create database 
-CREATE DATABASE bike_stores;
-
-USE bike_stores;
-
 -- Create tables
 DROP TABLE IF EXISTS stores;
 
 CREATE TABLE stores (
-	store_id INT AUTO_INCREMENT,
+	store_id SERIAL,
     store_name VARCHAR(255) NOT NULL,
     phone VARCHAR(25),
     email VARCHAR(255),
@@ -39,12 +16,12 @@ CREATE TABLE stores (
 DROP TABLE IF EXISTS staffs;
 
 CREATE TABLE staffs (
-	staff_id INT AUTO_INCREMENT,
+	staff_id SERIAL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     phone VARCHAR(25),
-    active TINYINT NOT NULL,
+    active SMALLINT NOT NULL,
     store_id INT NOT NULL,
     manager_id INT,
     PRIMARY KEY (staff_id),
@@ -55,7 +32,7 @@ CREATE TABLE staffs (
 DROP TABLE IF EXISTS categories;
 
 CREATE TABLE categories (
-	category_id INT AUTO_INCREMENT,
+	category_id SERIAL,
     category_name VARCHAR(255) NOT NULL,
     PRIMARY KEY (category_id)
 );
@@ -63,7 +40,7 @@ CREATE TABLE categories (
 DROP TABLE IF EXISTS brands;
 
 CREATE TABLE brands (
-	brand_id INT AUTO_INCREMENT,
+	brand_id SERIAL,
     brand_name VARCHAR(255) NOT NULL,
     PRIMARY KEY (brand_id)
 );
@@ -71,7 +48,7 @@ CREATE TABLE brands (
 DROP TABLE IF EXISTS products;
 
 CREATE TABLE products (
-	product_id INT AUTO_INCREMENT,
+	product_id SERIAL,
     product_name VARCHAR(255) NOT NULL,
     brand_id INT NOT NULL,
     category_id INT NOT NULL,
@@ -85,7 +62,7 @@ CREATE TABLE products (
 DROP TABLE IF EXISTS customers;
 
 CREATE TABLE customers (
-	customer_id INT AUTO_INCREMENT,
+	customer_id SERIAL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     phone VARCHAR(25),
@@ -100,9 +77,9 @@ CREATE TABLE customers (
 DROP TABLE IF EXISTS orders;
 
 CREATE TABLE orders (
-	order_id INT AUTO_INCREMENT,
+	order_id SERIAL,
     customer_id INT,
-    order_status TINYINT NOT NULL,
+    order_status SMALLINT NOT NULL,
     order_date DATE NOT NULL,
     required_date DATE NOT NULL,
     shipped_date DATE,
